@@ -5,7 +5,6 @@
 #endif
 #define PIN           6
 #define NUMPIXELS   170
-#define BRIGHTNESS  255
 #define SECONDSTARTLED 146
 
 #define BUTTONMODE 3
@@ -26,7 +25,7 @@ int minutespressed = 0;
 int modepressed = 0;
 
 // Configs
-boolean purist = true; // puristmode turns on "it is" only on full and half hours
+boolean purist = true;
 boolean dim = true;
 int dimintensity = 10; // percent
 int brightness = 255;
@@ -67,7 +66,7 @@ void setup()
 
 void bootup(){
   if (bootedup == 0){
-    pixels.setBrightness(BRIGHTNESS);
+    pixels.setBrightness(brightness);
     for (int i=0; i<NUMPIXELS; i++){
       pixels.setPixelColor(i,pixels.Color(0,0,0,255));
     }
@@ -93,9 +92,9 @@ void loop()
   CurrentTime = Clock.read();
 
   // Get current time
-  h=CurrentTime.Hour;
-  m=CurrentTime.Minute;
-  s=CurrentTime.Second;
+  h = CurrentTime.Hour;
+  m = CurrentTime.Minute;
+  s = CurrentTime.Second;
 
   // Print out current time if debug is turned on
   if (debug){
@@ -111,9 +110,10 @@ void loop()
   minutespressed = digitalRead(BUTTONMINUTES);
   modepressed = digitalRead(BUTTONMODE);
 
+  // Update hour from buttonpress
   if (hourpressed == HIGH){
-    if (h>=23){
-      h = 0;
+    if (h==23){
+      h = -1;
     }
     DateTime newTime;
     newTime.Day    = 1;
@@ -125,8 +125,12 @@ void loop()
     Clock.write(newTime);
     delay(300);
   }
-
+  
+  // Update minute from buttonpress
   if (minutespressed == HIGH){
+    if (m==59){
+      m = -1;
+    }
     DateTime newTime;
     newTime.Day    = 1;
     newTime.Month  = 1;
@@ -138,8 +142,9 @@ void loop()
     delay(200);
   }
 
+  // Switch mode from buttonpress
   if (modepressed == HIGH){
-    if (mode == 5){
+    if (mode == (sizeof(modes) / sizeof(modes[0]))-1){
       mode = 0;
     } else {
       mode++;
@@ -148,6 +153,8 @@ void loop()
   }
 
   // Parse time values to light corresponding pixels
+  //
+  // Purist mode, show "it is" only on full and half hours to prevent led burnout
   if (purist){
     if((m>=0 && m<5) || (m>=30 && m<35)){
       showItIs(1);
@@ -158,12 +165,6 @@ void loop()
     showItIs(1);
   }
 
-  // turn off if dim and turnedoffwhiledimmed
-  if (dim && turnoffitiswhiledimmed && timeInRange()){
-    showItIs(0);
-  }
-
-  
   // Minutes exactly 0 - "GENAU"|"JUSTE"
   if ((m==0)){
     individualPixels[28]=1; // G
@@ -229,10 +230,9 @@ void loop()
     individualPixels[33]=1; // I
   }
 
-
   // Add one hour when at least half hour has passed
   if (m>=25){
-    h=h+1;
+    h++;
   }
  
   // Hour=1 - "EIS"
@@ -338,10 +338,13 @@ void loop()
 
   // Minutes - Turn off minutes according config while dimmed
   turnOnMinutes(m);
+
+  // turn off it is and minutes if configured accordingly
   if (dim && turnoffminuteswhiledimmed && timeInRange()){
+    showItIs(0);
     turnOffMinutes();
   }
-
+  
   // Seconds
   if (s < 37){
     individualPixels[SECONDSTARTLED-s]=1; // 1-37
@@ -390,7 +393,7 @@ void showItIs(int state) {
   individualPixels[6]=state; // H
 }
 
-void turnOnMinutes(int m) {
+void turnOnMinutes() {
   if (m%5>=1){
     individualPixels[147]=1; // 1
   }
@@ -417,14 +420,18 @@ int getTimestamp(int h, int m){
 }
 
 boolean timeInRange(){
+  int now = getTimestamp(h, m);
+  int start = getTimestamp(hourfrom, minutefrom);
+  int end = getTimestamp(hourto, minuteto);
+  
   // Time crosses midnight
-  if (getTimestamp(hourfrom, minutefrom) > getTimestamp(hourto, minuteto)){
-    if ( getTimestamp(h, m) < getTimestamp(hourfrom, minutefrom) && getTimestamp(h, m) > getTimestamp(hourto,minuteto)){
+  if (start > end){
+    if (now >= start || now <= end){
       return true;
     }
   } else {
     // Time doesnt cross midnight
-    if ( getTimestamp(h, m) > getTimestamp(hourfrom, minutefrom) && getTimestamp(h, m) < getTimestamp(hourto, minuteto)){
+    if ( now >= start && now <= end){
       return true;
     }
   }
