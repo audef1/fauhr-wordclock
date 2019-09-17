@@ -349,16 +349,18 @@ void loop()
   if (s >=37){
     individualPixels[SECONDSTARTLED+60-s]=1; // 38-60
   }
-  
+
   // Light pixels corresponding to current time
   pixels.setBrightness(255); // full brightness
 
-  // Dimm down brightness during night time
-  if (h>=23 || h<6){
-    pixels.setBrightness(25);
+  // Dimm down brightness during night time */
+  if (dim && timeInRange()){
+    // Calculate brightness
+    brightness = (int)(255/dimintensity);
+    pixels.setBrightness(brightness);
   }
   
-  for (volatile int i=0; i<sizeof(individualPixels); i++){
+  for (volatile int i=0; i<NUMPIXELS; i++){
     if (individualPixels[i]==1){
       pixels.setPixelColor(i, pixels.Color(modes[mode][0],modes[mode][1],modes[mode][2],modes[mode][3]));
     }
@@ -369,7 +371,6 @@ void loop()
   
   pixels.show();
 }
-
 
 void resetPixels(){
   for (int i=0; i<NUMPIXELS; i++){

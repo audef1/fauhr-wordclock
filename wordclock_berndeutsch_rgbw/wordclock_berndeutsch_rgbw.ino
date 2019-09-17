@@ -345,12 +345,12 @@ void loop()
 
   // Dimm down brightness during night time */
   if (dim && timeInRange()){
-    /* Calculate brightness */
+    // Calculate brightness
     brightness = (int)(255/dimintensity);
     pixels.setBrightness(brightness);
   }
 
-  for (volatile int i=0; i<sizeof(individualPixels); i++){
+  for (volatile int i=0; i<NUMPIXELS; i++){
     if (individualPixels[i]==1){
       pixels.setPixelColor(i, pixels.Color(modes[mode][0],modes[mode][1],modes[mode][2],modes[mode][3]));
     }
