@@ -27,7 +27,7 @@ int modepressed = 0;
 boolean purist = true;
 boolean dim = true;
 int dimintensity = 10; // percent
-int brightness = 255;
+int brightness = 255; // 255 = 100%
 boolean turnoffminuteswhiledimmed = true;
 boolean turnoffitiswhiledimmed = true;
 int hourfrom = 23;

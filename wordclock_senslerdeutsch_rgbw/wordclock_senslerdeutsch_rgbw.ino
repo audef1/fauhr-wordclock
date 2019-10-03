@@ -27,7 +27,7 @@ int modepressed = 0;
 boolean purist = true;
 boolean dim = true;
 int dimintensity = 10; // percent
-int brightness = 255;
+int brightness = 255; // 255 = 100%
 boolean turnoffminuteswhiledimmed = true;
 boolean turnoffitiswhiledimmed = true;
 int hourfrom = 23;
@@ -64,7 +64,7 @@ void setup()
 
 void bootup(){
   if (bootedup == 0){
-    pixels.setBrightness(BRIGHTNESS);
+    pixels.setBrightness(brightness);
     for (int i=0; i<NUMPIXELS; i++){
       pixels.setPixelColor(i,pixels.Color(0,0,0,255));
     }
