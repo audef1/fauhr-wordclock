@@ -27,13 +27,14 @@ int modepressed = 0;
 // Configs
 boolean purist = true;
 boolean dim = true;
-int dimintensity = 10; // percent
-int brightness = 255; // 255 = 100%
+int dimintensity = 5; // percent
+int defaultbrightness = 255; // 255 = 100%
+int brightness = 0;
 boolean turnoffminuteswhiledimmed = true;
 boolean turnoffitiswhiledimmed = true;
 int hourfrom = 23;
 int minutefrom = 0;
-int hourto = 6;
+int hourto = 7;
 int minuteto = 0;
 int mode = 0;
 int customColor[4] = {0,0,0,0};
@@ -66,7 +67,7 @@ void setup()
 
 void bootup(){
   if (bootedup == 0){
-    pixels.setBrightness(brightness);
+    pixels.setBrightness(255);
     for (int i=0; i<NUMPIXELS; i++){
       pixels.setPixelColor(i,pixels.Color(0,0,0,255));
     }
@@ -354,12 +355,12 @@ void loop()
   }
 
   // Light pixels corresponding to current time
-  pixels.setBrightness(255); // full brightness
+  pixels.setBrightness(defaultbrightness); // default brightness
 
   // Dimm down brightness during night time */
   if (dim && timeInRange()){
     // Calculate brightness
-    brightness = (int)(255/dimintensity);
+    brightness = (int)(255/(100/dimintensity));
     pixels.setBrightness(brightness);
   }
   
